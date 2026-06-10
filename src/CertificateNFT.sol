@@ -13,6 +13,7 @@ contract CertificateNFT is ERC721URIStorage, Ownable {
     uint256 private _tokenIdCounter;
 
     struct Certificate {
+        string  certId;
         string  recipientName;
         string  courseName;
         string  issueDate;
@@ -23,6 +24,9 @@ contract CertificateNFT is ERC721URIStorage, Ownable {
 
     mapping(uint256 => Certificate) public certificates;
     mapping(address => bool) public authorizedIssuers;
+    
+    mapping(string => uint256) public certIdToTokenId;
+    mapping(string => bool) public certIdExists;
 
     // Events
     event CertificateMinted(uint256 indexed tokenId, address indexed recipient, string courseName);
@@ -30,7 +34,7 @@ contract CertificateNFT is ERC721URIStorage, Ownable {
     event IssuerAdded(address indexed issuer);
     event IssuerRemoved(address indexed issuer);
 
-    // Custom errors (lebih gas-efisien dari require string)
+    // Custom errors
     error NotAuthorizedIssuer();
     error TokenDoesNotExist();
     error AlreadyRevoked();
@@ -62,16 +66,20 @@ contract CertificateNFT is ERC721URIStorage, Ownable {
     /// @notice Mint sertifikat baru ke wallet mahasiswa
     function mintCertificate(
         address recipient,
+        string calldata certId,
         string calldata recipientName,
         string calldata courseName,
         string calldata issueDate,
         string calldata ipfsHash
     ) external onlyIssuer returns (uint256 tokenId) {
+        require(!certIdExists[certId], "Certificate ID already exists");
+        
         tokenId = _tokenIdCounter++;
         _safeMint(recipient, tokenId);
         _setTokenURI(tokenId, ipfsHash);
 
         certificates[tokenId] = Certificate({
+            certId:        certId,
             recipientName: recipientName,
             courseName:    courseName,
             issueDate:     issueDate,
@@ -79,6 +87,9 @@ contract CertificateNFT is ERC721URIStorage, Ownable {
             isRevoked:     false,
             issuedAt:      block.timestamp
         });
+
+        certIdToTokenId[certId] = tokenId;
+        certIdExists[certId] = true;
 
         emit CertificateMinted(tokenId, recipient, courseName);
     }
@@ -92,10 +103,21 @@ contract CertificateNFT is ERC721URIStorage, Ownable {
         emit CertificateRevoked(tokenId, msg.sender);
     }
 
+    function revokeCertificateByCertId(string calldata certId)
+        external onlyIssuer
+    {
+        if (!certIdExists[certId]) revert TokenDoesNotExist();
+        uint256 tid = certIdToTokenId[certId];
+        if (certificates[tid].isRevoked) revert AlreadyRevoked();
+        certificates[tid].isRevoked = true;
+        emit CertificateRevoked(tid, msg.sender);
+    }
+
     /// @notice Verifikasi keaslian sertifikat — siapapun bisa panggil
     function verifyCertificate(uint256 tokenId)
         external view tokenExists(tokenId)
         returns (
+            string  memory certId,
             string  memory recipientName,
             string  memory courseName,
             string  memory issueDate,
@@ -107,6 +129,7 @@ contract CertificateNFT is ERC721URIStorage, Ownable {
     {
         Certificate memory cert = certificates[tokenId];
         return (
+            cert.certId,
             cert.recipientName,
             cert.courseName,
             cert.issueDate,
@@ -114,6 +137,34 @@ contract CertificateNFT is ERC721URIStorage, Ownable {
             cert.isRevoked,
             !cert.isRevoked,
             tokenURI(tokenId)
+        );
+    }
+
+    function verifyCertificateByCertId(string calldata certId)
+        external view 
+        returns (
+            string  memory recipientName,
+            string  memory courseName,
+            string  memory issueDate,
+            address        issuedTo,
+            bool           isRevoked,
+            bool           isValid,
+            string  memory ipfsHash,
+            uint256        tokenId
+        )
+    {
+        if (!certIdExists[certId]) revert TokenDoesNotExist();
+        uint256 tid = certIdToTokenId[certId];
+        Certificate memory cert = certificates[tid];
+        return (
+            cert.recipientName,
+            cert.courseName,
+            cert.issueDate,
+            cert.issuedTo,
+            cert.isRevoked,
+            !cert.isRevoked,
+            tokenURI(tid),
+            tid
         );
     }
 

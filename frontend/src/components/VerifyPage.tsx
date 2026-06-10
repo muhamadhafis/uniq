@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MagnifyingGlass, SealCheck, WarningCircle, ArrowRight, User, CalendarBlank, Hash } from "@phosphor-icons/react";
-import { useVerifyCertificate } from "../hooks/useCertificate";
+import { useVerifyCertificateByCertId } from "../hooks/useCertificate";
 
 export default function VerifyPage() {
   const [inputId, setInputId] = useState("");
-  const [tokenId, setTokenId] = useState<bigint | undefined>();
-  const { data, isLoading, error } = useVerifyCertificate(tokenId);
+  const [certId, setCertId] = useState<string | undefined>();
+  const { data, isLoading, error } = useVerifyCertificateByCertId(certId);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,14 +41,14 @@ export default function VerifyPage() {
         <div className="double-bezel">
           <div className="double-bezel-inner p-2 flex items-center">
             <input
-              type="number"
-              className="w-full bg-transparent py-2 px-4 text-xl outline-none placeholder:text-white/20 font-light"
-              placeholder="Certificate ID (Token ID)"
+              type="text"
+              className="w-full bg-transparent py-2 px-4 text-xl outline-none placeholder:text-white/20 font-light uppercase"
+              placeholder="e.g. CG-202606-RD5RW"
               value={inputId} onChange={e => setInputId(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && inputId && setTokenId(BigInt(inputId))}
+              onKeyDown={e => e.key === 'Enter' && inputId && setCertId(inputId)}
             />
             <button
-              onClick={() => setTokenId(BigInt(inputId))}
+              onClick={() => setCertId(inputId)}
               disabled={!inputId}
               className="group flex-shrink-0 bg-white text-black h-12 w-12 rounded-full flex items-center justify-center transition-all duration-500 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
             >
@@ -114,7 +114,7 @@ export default function VerifyPage() {
                       <div className="grid grid-cols-1 mt-4">
                         <div>
                           <p className="text-white/40 text-xs tracking-widest uppercase mb-1 flex items-center gap-2"><Hash size={12} /> Certificate ID</p>
-                          <p className="text-white/90 font-mono">{tokenId?.toString()}</p>
+                          <p className="text-white/90 font-mono">{certId}</p>
                         </div>
                       </div>
 

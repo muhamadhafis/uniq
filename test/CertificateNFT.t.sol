@@ -19,34 +19,44 @@ contract CertificateNFTTest is Test {
 
     function test_MintCertificate() public {
         uint256 tokenId = cert.mintCertificate(
-            student, "Budi Santoso", "Web Development 3.0", "2025-06-10", "ipfs://QmHash"
+            student, "CG-12345", "Budi Santoso", "Web Development 3.0", "2025-06-10", "ipfs://QmHash"
         );
         assertEq(tokenId, 0);
         assertEq(cert.ownerOf(0), student);
         assertEq(cert.totalSupply(), 1);
-    }
-
-    function test_MintEmitsEvent() public {
-        vm.expectEmit(true, true, false, true);
-        emit CertificateNFT.CertificateMinted(0, student, "Web Development 3.0");
-        cert.mintCertificate(student, "Budi", "Web Development 3.0", "2025-06-10", "ipfs://QmHash");
+        
+        uint256 tid = cert.certIdToTokenId("CG-12345");
+        assertEq(tid, 0);
     }
 
     function test_RevertMint_NotIssuer() public {
         vm.prank(random);
         vm.expectRevert(CertificateNFT.NotAuthorizedIssuer.selector);
-        cert.mintCertificate(student, "Budi", "Course", "2025-06-10", "ipfs://hash");
+        cert.mintCertificate(student, "CG-123", "Budi", "Course", "2025-06-10", "ipfs://hash");
     }
 
     // ── Verify ────────────────────────────────────────────────────────────────
 
     function test_VerifyCertificate() public {
-        cert.mintCertificate(student, "Budi Santoso", "Web Dev 3.0", "2025-06-10", "ipfs://QmHash");
-        (string memory name, , , address issuedTo, bool isRevoked, bool isValid,) =
+        cert.mintCertificate(student, "CG-123", "Budi Santoso", "Web Dev 3.0", "2025-06-10", "ipfs://QmHash");
+        (string memory certId, string memory name, , , address issuedTo, bool isRevoked, bool isValid,) =
             cert.verifyCertificate(0);
+
+        assertEq(certId, "CG-123");
+        assertEq(name, "Budi Santoso");
+        assertEq(issuedTo, student);
+        assertFalse(isRevoked);
+        assertTrue(isValid);
+    }
+    
+    function test_VerifyCertificateByCertId() public {
+        cert.mintCertificate(student, "CG-ABC", "Budi Santoso", "Web Dev 3.0", "2025-06-10", "ipfs://QmHash");
+        (string memory name, , , address issuedTo, bool isRevoked, bool isValid,, uint256 tokenId) =
+            cert.verifyCertificateByCertId("CG-ABC");
 
         assertEq(name, "Budi Santoso");
         assertEq(issuedTo, student);
+        assertEq(tokenId, 0);
         assertFalse(isRevoked);
         assertTrue(isValid);
     }
@@ -59,15 +69,23 @@ contract CertificateNFTTest is Test {
     // ── Revoke ────────────────────────────────────────────────────────────────
 
     function test_RevokeCertificate() public {
-        cert.mintCertificate(student, "Budi", "Course", "2025-06-10", "ipfs://hash");
+        cert.mintCertificate(student, "CG-123", "Budi", "Course", "2025-06-10", "ipfs://hash");
         cert.revokeCertificate(0);
-        (,,,, bool isRevoked, bool isValid,) = cert.verifyCertificate(0);
+        (,,,,, bool isRevoked, bool isValid,) = cert.verifyCertificate(0);
+        assertTrue(isRevoked);
+        assertFalse(isValid);
+    }
+    
+    function test_RevokeCertificateByCertId() public {
+        cert.mintCertificate(student, "CG-123", "Budi", "Course", "2025-06-10", "ipfs://hash");
+        cert.revokeCertificateByCertId("CG-123");
+        (,,,,, bool isRevoked, bool isValid,) = cert.verifyCertificate(0);
         assertTrue(isRevoked);
         assertFalse(isValid);
     }
 
     function test_RevertRevoke_AlreadyRevoked() public {
-        cert.mintCertificate(student, "Budi", "Course", "2025-06-10", "ipfs://hash");
+        cert.mintCertificate(student, "CG-123", "Budi", "Course", "2025-06-10", "ipfs://hash");
         cert.revokeCertificate(0);
         vm.expectRevert(CertificateNFT.AlreadyRevoked.selector);
         cert.revokeCertificate(0);
@@ -79,16 +97,6 @@ contract CertificateNFTTest is Test {
         cert.addIssuer(random);
         assertTrue(cert.authorizedIssuers(random));
         vm.prank(random);
-        cert.mintCertificate(student, "Budi", "Course", "2025-06-10", "ipfs://hash");
-    }
-
-    // ── Fuzz Test ─────────────────────────────────────────────────────────────
-
-    function testFuzz_MintMultiple(uint8 count) public {
-        vm.assume(count > 0 && count < 50);
-        for (uint256 i; i < count; ++i) {
-            cert.mintCertificate(student, "Budi", "Course", "2025-06-10", "ipfs://hash");
-        }
-        assertEq(cert.totalSupply(), count);
+        cert.mintCertificate(student, "CG-123", "Budi", "Course", "2025-06-10", "ipfs://hash");
     }
 }

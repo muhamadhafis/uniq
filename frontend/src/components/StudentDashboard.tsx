@@ -25,8 +25,8 @@ function CertCard({ tokenId, index, searchTerm }: { tokenId: bigint; index: numb
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    if (data?.[6]) {
-      const url = data[6].replace("ipfs://", "https://green-absent-gorilla-466.mypinata.cloud/ipfs/");
+    if (data?.[7]) {
+      const url = data[7].replace("ipfs://", "https://green-absent-gorilla-466.mypinata.cloud/ipfs/");
       fetch(url)
         .then(res => res.json())
         .then(json => {
@@ -42,15 +42,15 @@ function CertCard({ tokenId, index, searchTerm }: { tokenId: bigint; index: numb
 
   if (!data) return null;
 
-  const courseName = data[1].toLowerCase();
-  const certIdStr = tokenId.toString();
+  const courseName = data[2].toLowerCase();
+  const certIdStr = data[0];
   const term = searchTerm.toLowerCase();
 
-  if (searchTerm && !certIdStr.includes(term) && !courseName.includes(term)) {
+  if (searchTerm && !certIdStr.toLowerCase().includes(term) && !courseName.includes(term)) {
     return null;
   }
 
-  const isValid = data[5];
+  const isValid = data[6];
 
   return (
     <motion.div
@@ -66,15 +66,15 @@ function CertCard({ tokenId, index, searchTerm }: { tokenId: bigint; index: numb
             <p className="text-white/40 text-sm tracking-widest uppercase mb-1">
               Certificate ID: {certIdStr}
             </p>
-            <h3 className="text-2xl font-medium tracking-tight leading-tight">{data[1]}</h3>
-            <p className="text-white/50 text-sm mt-1">{data[2]}</p>
+            <h3 className="text-2xl font-medium tracking-tight leading-tight">{data[2]}</h3>
+            <p className="text-white/50 text-sm mt-1">{data[3]}</p>
           </div>
         </div>
 
         <div className="flex items-start md:items-end justify-center">
           <div className="flex flex-row gap-2 mt-2">
             <a
-              href={data[6].replace("ipfs://", "https://green-absent-gorilla-466.mypinata.cloud/ipfs/")}
+              href={data[7].replace("ipfs://", "https://green-absent-gorilla-466.mypinata.cloud/ipfs/")}
               target="_blank"
               rel="noreferrer"
               title="View IPFS Metadata"

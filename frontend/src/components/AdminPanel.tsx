@@ -124,7 +124,7 @@ export default function AdminPanel() {
       });
 
       setStatusText(`Please Sign the Transaction in your Wallet...`);
-      mint(form.recipient as `0x${string}`, form.recipientName, form.courseName, issueDateStr, metadataIpfsHash);
+      mint(form.recipient as `0x${string}`, certId, form.recipientName, form.courseName, issueDateStr, metadataIpfsHash);
     } catch (e: any) {
       setStatusText(`Error: ${e.message}`);
     } finally {
@@ -248,18 +248,18 @@ export default function AdminPanel() {
         <div className="double-bezel">
           <div className="double-bezel-inner p-6 md:p-8 flex flex-col space-y-4">
             <div className="space-y-1">
-              <Label className="text-white/60">Certificate ID (Token ID)</Label>
+              <Label className="text-white/60">Certificate ID</Label>
               <Input
-                type="number"
-                className="bg-transparent border-white/10 focus:border-white/40 text-white"
-                placeholder="e.g. 0"
+                type="text"
+                className="bg-transparent border-white/10 focus:border-white/40 text-white uppercase"
+                placeholder="e.g. CG-202606-RD5RW"
                 value={revokeId}
                 onChange={e => setRevokeId(e.target.value)}
               />
             </div>
             <Button
               variant="destructive"
-              onClick={() => revoke(BigInt(revokeId))}
+              onClick={() => revoke(revokeId)}
               disabled={revoking || !revokeId}
               className="group w-full rounded-full h-12 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/30"
             >

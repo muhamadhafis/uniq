@@ -15,6 +15,16 @@ export function useVerifyCertificate(tokenId: bigint | undefined) {
   });
 }
 
+export function useVerifyCertificateByCertId(certId: string | undefined) {
+  return useReadContract({
+    address: CONTRACT_ADDRESS,
+    abi: CERTIFICATE_ABI,
+    functionName: "verifyCertificateByCertId",
+    args: certId ? [certId] : undefined,
+    query: { enabled: !!certId },
+  });
+}
+
 export function useCertificatesByOwner(owner: `0x${string}` | undefined) {
   return useReadContract({
     address: CONTRACT_ADDRESS,
@@ -32,6 +42,7 @@ export function useMintCertificate() {
 
   const mint = (
     recipient: `0x${string}`,
+    certId: string,
     recipientName: string,
     courseName: string,
     issueDate: string,
@@ -41,7 +52,7 @@ export function useMintCertificate() {
       address: CONTRACT_ADDRESS,
       abi: CERTIFICATE_ABI,
       functionName: "mintCertificate",
-      args: [recipient, recipientName, courseName, issueDate, ipfsHash],
+      args: [recipient, certId, recipientName, courseName, issueDate, ipfsHash],
     });
   };
 
@@ -53,12 +64,12 @@ export function useRevokeCertificate() {
   const { isLoading: isConfirming, isSuccess } =
     useWaitForTransactionReceipt({ hash });
 
-  const revoke = (tokenId: bigint) => {
+  const revoke = (certId: string) => {
     writeContract({
       address: CONTRACT_ADDRESS,
       abi: CERTIFICATE_ABI,
-      functionName: "revokeCertificate",
-      args: [tokenId],
+      functionName: "revokeCertificateByCertId",
+      args: [certId],
     });
   };
 
