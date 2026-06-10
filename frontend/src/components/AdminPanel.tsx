@@ -24,10 +24,10 @@ import {
 import { cn } from "@/lib/utils";
 
 const CATEGORIES = [
-  { value: "ACW", label: "Achievement & Awards" },
-  { value: "CG", label: "Completion & Graduation" },
-  { value: "PA", label: "Participation & Attendance" },
-  { value: "CL", label: "Contribution & Leadership" }
+  { value: "ACW", label: "ACHIEVEMENT & AWARDS" },
+  { value: "CG", label: "COMPLETION & GRADUATION" },
+  { value: "PA", label: "PARTICIPATION & ATTENDANCE" },
+  { value: "CL", label: "CONTRIBUTION & LEADERSHIP" }
 ];
 
 export default function AdminPanel() {
@@ -74,13 +74,13 @@ export default function AdminPanel() {
         ctx.font = "bold 70px 'Times New Roman', serif";
         ctx.fillStyle = "#d8ae5e";
         const categoryLabel = CATEGORIES.find(c => c.value === category)?.label || category;
-        ctx.fillText(`Certificate of`, canvas.width / 2, canvas.height / 2 - 120);
-        ctx.fillText(categoryLabel, canvas.width / 2, canvas.height / 2 - 40);
+        ctx.fillText(`CERTIFICATE OF`, canvas.width / 2, canvas.height / 2 - 470);
+        ctx.fillText(categoryLabel, canvas.width / 2, canvas.height / 2 - 400);
 
         // Draw Name
         ctx.font = "bold 90px 'Times New Roman', serif";
         ctx.fillStyle = "#d8ae5e";
-        ctx.fillText(form.recipientName, canvas.width / 2, canvas.height / 2 + 50);
+        ctx.fillText(form.recipientName, canvas.width / 2, canvas.height / 2 + 40);
 
         canvas.toBlob((blob) => {
           if (blob) resolve(blob);
