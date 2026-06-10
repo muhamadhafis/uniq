@@ -5,7 +5,7 @@ import { http } from "wagmi";
 
 export const config = getDefaultConfig({
   appName: 'uniQ',
-  projectId: '1f32a752af601b38fcc8d5e8ff7b7136', // Valid WalletConnect Project ID for mobile
+  projectId: 'f3a0feb8c0ccc909d1dcbfd56133a14e', // Valid WalletConnect Project ID for mobile
   chains: [sepolia, anvil],
   wallets: [
     {
