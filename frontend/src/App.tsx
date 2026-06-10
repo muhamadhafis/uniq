@@ -57,7 +57,7 @@ export default function App() {
       {/* Main Content Area */}
       <main className="max-w-5xl mx-auto mt-16">
         {/* Mobile Tabs */}
-        <div className="flex md:hidden overflow-x-auto gap-2 pb-6 no-scrollbar">
+        <div className="flex md:hidden overflow-x-auto gap-2 pb-6 py-1 no-scrollbar">
           {tabs.map((t) => (
             <button
               key={t.id}

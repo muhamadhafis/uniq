@@ -140,9 +140,6 @@ export default function AdminPanel() {
       {/* Mint Section */}
       <div className="flex flex-col space-y-6">
         <div>
-          <span className="inline-block px-3 py-1 mb-4 text-[10px] uppercase tracking-[0.2em] font-medium bg-white/10 rounded-full">
-            Issuer Portal
-          </span>
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight">Issue Certificate</h1>
         </div>
 

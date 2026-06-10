@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MagnifyingGlass, SealCheck, WarningCircle, ArrowRight, User, CalendarBlank, Hash } from "@phosphor-icons/react";
 import { useVerifyCertificate } from "../hooks/useCertificate";
@@ -7,27 +7,43 @@ export default function VerifyPage() {
   const [inputId, setInputId] = useState("");
   const [tokenId, setTokenId] = useState<bigint | undefined>();
   const { data, isLoading, error } = useVerifyCertificate(tokenId);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (data?.[6]) {
+      const url = data[6].replace("ipfs://", "https://green-absent-gorilla-466.mypinata.cloud/ipfs/");
+      fetch(url)
+        .then(res => res.json())
+        .then(json => {
+          if (json.imageIpfsHash) {
+            setImageUrl(json.imageIpfsHash.replace("ipfs://", "https://green-absent-gorilla-466.mypinata.cloud/ipfs/"));
+          } else if (json.image) {
+            setImageUrl(json.image.replace("ipfs://", "https://green-absent-gorilla-466.mypinata.cloud/ipfs/"));
+          }
+        })
+        .catch(console.error);
+    } else {
+      setImageUrl(null);
+    }
+  }, [data]);
 
   return (
     <div className="flex flex-col md:flex-row gap-12 lg:gap-24">
       {/* Search Section */}
       <div className="w-full md:w-1/2 flex flex-col space-y-8">
         <div>
-          <span className="inline-block px-3 py-1 mb-4 text-[10px] uppercase tracking-[0.2em] font-medium bg-white/10 rounded-full">
-            Public Explorer
-          </span>
           <h1 className="text-5xl md:text-6xl font-semibold tracking-tight leading-tight">Verify<br /><span className="text-white/40">Authenticity.</span></h1>
           <p className="text-white/50 mt-6 font-light leading-relaxed text-lg">
             Instantly cryptographically verify any academic credential issued on our platform without relying on third parties.
           </p>
         </div>
 
-        <div className="double-bezel mt-8">
+        <div className="double-bezel">
           <div className="double-bezel-inner p-2 flex items-center">
             <input
               type="number"
-              className="w-full bg-transparent py-4 text-xl outline-none placeholder:text-white/20 font-light"
-              placeholder="Certificate ID (Token ID)..."
+              className="w-full bg-transparent py-2 px-4 text-xl outline-none placeholder:text-white/20 font-light"
+              placeholder="Certificate ID (Token ID)"
               value={inputId} onChange={e => setInputId(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && inputId && setTokenId(BigInt(inputId))}
             />
@@ -103,12 +119,12 @@ export default function VerifyPage() {
                       </div>
 
                       <div className="pt-4 flex flex-col gap-3">
-                        <a href={data[6].replace("ipfs://", "https://ipfs.io/ipfs/")} target="_blank" rel="noreferrer" className="group flex items-center justify-between p-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 transition-colors">
+                        <a href={data[6].replace("ipfs://", "https://green-absent-gorilla-466.mypinata.cloud/ipfs/")} target="_blank" rel="noreferrer" className="group flex items-center justify-between p-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 transition-colors">
                           <span className="text-sm font-medium text-white/70">View Raw IPFS Metadata</span>
                           <ArrowRight size={14} className="text-white/40 group-hover:text-white transition-colors" />
                         </a>
-                        {data[6] && (
-                          <a href={data[6].replace("ipfs://", "https://ipfs.io/ipfs/")} target="_blank" rel="noreferrer" className="group flex items-center justify-between p-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 transition-colors">
+                        {imageUrl && (
+                          <a href={imageUrl} target="_blank" rel="noreferrer" className="group flex items-center justify-between p-4 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 transition-colors">
                             <span className="text-sm font-medium text-white/70">View Certificate Image</span>
                             <ArrowRight size={14} className="text-white/40 group-hover:text-white transition-colors" />
                           </a>

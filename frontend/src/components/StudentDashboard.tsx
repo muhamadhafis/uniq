@@ -22,6 +22,23 @@ import {
 
 function CertCard({ tokenId, index, searchTerm }: { tokenId: bigint; index: number; searchTerm: string }) {
   const { data } = useVerifyCertificate(tokenId);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (data?.[6]) {
+      const url = data[6].replace("ipfs://", "https://green-absent-gorilla-466.mypinata.cloud/ipfs/");
+      fetch(url)
+        .then(res => res.json())
+        .then(json => {
+          if (json.imageIpfsHash) {
+            setImageUrl(json.imageIpfsHash.replace("ipfs://", "https://green-absent-gorilla-466.mypinata.cloud/ipfs/"));
+          } else if (json.image) {
+            setImageUrl(json.image.replace("ipfs://", "https://green-absent-gorilla-466.mypinata.cloud/ipfs/"));
+          }
+        })
+        .catch(() => { });
+    }
+  }, [data]);
 
   if (!data) return null;
 
@@ -43,11 +60,8 @@ function CertCard({ tokenId, index, searchTerm }: { tokenId: bigint; index: numb
       transition={{ duration: 0.8, delay: index * 0.1, ease: [0.32, 0.72, 0, 1] }}
       className="double-bezel w-full"
     >
-      <div className="double-bezel-inner p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="double-bezel-inner py-2 px-6 flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div className="flex items-center gap-6">
-          <div className="w-16 h-16 rounded-full bg-white/5 flex flex-shrink-0 items-center justify-center ring-1 ring-white/10">
-            <Certificate weight="light" size={32} className="text-white/70" />
-          </div>
           <div>
             <p className="text-white/40 text-sm tracking-widest uppercase mb-1">
               Certificate ID: {certIdStr}
@@ -57,21 +71,35 @@ function CertCard({ tokenId, index, searchTerm }: { tokenId: bigint; index: numb
           </div>
         </div>
 
-        <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-center gap-4">
-          <div className={`px-4 py-1.5 rounded-full text-xs tracking-wider uppercase font-medium flex items-center gap-2 w-fit ${isValid ? "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20" : "bg-red-500/10 text-red-400 ring-1 ring-red-500/20"}`}>
-            {isValid ? <SealCheck weight="fill" size={16} /> : <WarningCircle weight="fill" size={16} />}
-            {isValid ? "Valid" : "Revoked"}
+        <div className="flex items-start md:items-end justify-center gap-2">
+          <div className="flex flex-row gap-2 mt-2">
+            <a
+              href={data[6].replace("ipfs://", "https://green-absent-gorilla-466.mypinata.cloud/ipfs/")}
+              target="_blank"
+              rel="noreferrer"
+              title="View IPFS Metadata"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-sm font-medium"
+            >
+              <LinkIcon size={16} className="text-white/70" />
+              <span className="text-white/80">Metadata</span>
+            </a>
+            {imageUrl && (
+              <a
+                href={imageUrl}
+                target="_blank"
+                rel="noreferrer"
+                title="View Certificate Image"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-sm font-medium"
+              >
+                <LinkIcon size={16} className="text-white/70" />
+                <span>Image</span>
+              </a>
+            )}
+            <div className={`px-4 py-1.5 rounded-full text-xs tracking-wider uppercase font-medium flex items-center gap-1 w-fit ${isValid ? "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20" : "bg-red-500/10 text-red-400 ring-1 ring-red-500/20"}`}>
+              {isValid ? <SealCheck weight="fill" size={16} /> : <WarningCircle weight="fill" size={16} />}
+              {isValid ? "Valid" : "Revoked"}
+            </div>
           </div>
-          <a
-            href={data[6].replace("ipfs://", "https://ipfs.io/ipfs/")}
-            target="_blank"
-            rel="noreferrer"
-            title="View Certificate Image"
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-sm font-medium"
-          >
-            <LinkIcon size={16} className="text-white/70" />
-            <span className="text-white/80">View IPFS</span>
-          </a>
         </div>
       </div>
     </motion.div>
@@ -119,12 +147,12 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="flex flex-col space-y-12">
+    <div className="flex flex-col space-y-6 sm:space-y-12 ">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight">My Collection</h1>
         </div>
-        <div className="flex flex-col gap-4 items-center sm:items-end">
+        <div className="flex flex-col gap-4 items-start sm:items-end">
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative">
               <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
@@ -171,13 +199,13 @@ export default function StudentDashboard() {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-4">
           {currentItems.map((id, index) => (
             <CertCard key={id.toString()} tokenId={id} index={index} searchTerm={debouncedSearch} />
           ))}
 
           {totalPages > 1 && (
-            <div className="mt-8">
+            <div className="mt-4">
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
