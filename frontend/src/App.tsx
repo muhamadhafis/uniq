@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { useAccount } from "wagmi";
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { motion, AnimatePresence } from "framer-motion";
-import { Wallet, SignOut } from "@phosphor-icons/react";
 import AdminPanel from "./components/AdminPanel";
 import StudentDashboard from "./components/StudentDashboard";
 import VerifyPage from "./components/VerifyPage";
@@ -10,8 +10,6 @@ type Tab = "admin" | "student" | "verify";
 
 export default function App() {
   const { address, isConnected } = useAccount();
-  const { connect, connectors } = useConnect();
-  const { disconnect } = useDisconnect();
   const [tab, setTab] = useState<Tab>("verify");
 
   const tabs: { id: Tab; label: string }[] = [
@@ -53,27 +51,7 @@ export default function App() {
         </div>
 
         <div className="flex items-center">
-          {!isConnected ? (
-            <button
-              onClick={() => connect({ connector: connectors[0] })}
-              className="group flex items-center gap-2 bg-white text-black px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-500 active:scale-[0.98] hover:bg-white/90"
-            >
-              Connect Wallet
-              <div className="w-6 h-6 rounded-full bg-black/10 flex items-center justify-center transition-transform duration-500 group-hover:translate-x-0.5 group-hover:scale-105">
-                <Wallet weight="bold" size={12} />
-              </div>
-            </button>
-          ) : (
-            <button
-              onClick={() => disconnect()}
-              className="group flex items-center gap-3 bg-white/[0.05] ring-1 ring-white/10 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-500 active:scale-[0.98] hover:bg-white/[0.08]"
-            >
-              <span className="opacity-70">{address?.slice(0, 6)}...{address?.slice(-4)}</span>
-              <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center transition-transform duration-500 group-hover:translate-x-0.5">
-                <SignOut weight="bold" size={12} />
-              </div>
-            </button>
-          )}
+          <ConnectButton />
         </div>
       </motion.nav>
 
