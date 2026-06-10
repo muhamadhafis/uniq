@@ -21,6 +21,17 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
 const CATEGORIES = [
@@ -44,11 +55,12 @@ export default function AdminPanel() {
   const [revokeId, setRevokeId] = useState("");
   const [statusText, setStatusText] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const { mint, isPending: minting, isConfirming, isSuccess, error } = useMintCertificate();
-  const { revoke, isPending: revoking, isSuccess: revokeSuccess } = useRevokeCertificate();
+  const { revoke, isPending: revoking, isConfirming: revokeConfirming, isSuccess: revokeSuccess, error: revokeError } = useRevokeCertificate();
 
   // Draw image to canvas and add text
   const generateImageBlob = (): Promise<Blob> => {
@@ -71,14 +83,14 @@ export default function AdminPanel() {
         ctx.textAlign = "center";
 
         // Draw Category
-        ctx.font = "bold 70px 'Times New Roman', serif";
+        ctx.font = "bold 100px 'Times New Roman', serif";
         ctx.fillStyle = "#d8ae5e";
         const categoryLabel = CATEGORIES.find(c => c.value === category)?.label || category;
         ctx.fillText(`CERTIFICATE OF`, canvas.width / 2, canvas.height / 2 - 470);
-        ctx.fillText(categoryLabel, canvas.width / 2, canvas.height / 2 - 400);
+        ctx.fillText(categoryLabel, canvas.width / 2, canvas.height / 2 - 360);
 
         // Draw Name
-        ctx.font = "bold 90px 'Times New Roman', serif";
+        ctx.font = "bold 150px 'Times New Roman', serif";
         ctx.fillStyle = "#d8ae5e";
         ctx.fillText(form.recipientName, canvas.width / 2, canvas.height / 2 + 40);
 
@@ -92,6 +104,8 @@ export default function AdminPanel() {
   };
 
   async function handleMint() {
+    setIsAlertOpen(false); // Close the modal immediately
+
     if (!form.recipient || !form.recipientName || !date) {
       setStatusText("Error: Please fill all required fields");
       return;
@@ -126,7 +140,11 @@ export default function AdminPanel() {
       setStatusText(`Please Sign the Transaction in your Wallet...`);
       mint(form.recipient as `0x${string}`, certId, form.recipientName, form.courseName, issueDateStr, metadataIpfsHash);
     } catch (e: any) {
-      setStatusText(`Error: ${e.message}`);
+      if (e.message?.includes("User rejected")) {
+        setStatusText("Error: Dibatalkan untuk mint sertifikat.");
+      } else {
+        setStatusText(`Error: ${e.message.substring(0, 50)}...`);
+      }
     } finally {
       setIsUploading(false);
     }
@@ -219,14 +237,32 @@ export default function AdminPanel() {
               </Popover>
             </div>
 
-            <Button
-              onClick={handleMint}
-              disabled={isUploading || minting || isConfirming || !address}
-              className="group w-full mt-2 bg-white text-black hover:bg-white/90 rounded-full h-12"
-            >
-              <span>{isUploading ? "Uploading to IPFS..." : minting ? "Awaiting Signature..." : isConfirming ? "Confirming..." : "Mint Credential"}</span>
-              <FileArrowUp weight="bold" size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
+            <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+              <AlertDialogTrigger asChild>
+                <Button
+                  disabled={isUploading || minting || isConfirming || !address || !form.recipient || !form.recipientName || !date}
+                  className="group w-full mt-2 bg-white text-black hover:bg-white/90 rounded-full h-12"
+                >
+                  <span>{isUploading ? "Uploading to IPFS..." : minting ? "Awaiting Signature..." : isConfirming ? "Confirming..." : "Mint Credential"}</span>
+                  <FileArrowUp weight="bold" size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-[#0a0a0a] border-white/10 text-white">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirm Certificate Details</AlertDialogTitle>
+                  <AlertDialogDescription className="text-white/60">
+                    Are you sure the following data is 100% correct? <br /><br />
+                    <span className="block text-white/90"><strong>Name:</strong> {form.recipientName}</span>
+                    <span className="block text-white/90"><strong>Course:</strong> {form.courseName}</span>
+                    <span className="block text-white/90 font-mono text-xs mt-1"><strong>Wallet:</strong> {form.recipient}</span>
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="bg-transparent border-white/10 text-white hover:bg-white/5 hover:text-white">Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleMint} className="bg-white text-black hover:bg-white/90">Yes, Proceed</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
 
             {statusText && <p className="text-sm text-white/50">{statusText}</p>}
             {isSuccess && (
@@ -234,7 +270,7 @@ export default function AdminPanel() {
                 <CheckCircle weight="fill" /> Minted successfully!
               </motion.div>
             )}
-            {error && <p className="text-sm text-red-400">Tx Error: {error.message.substring(0, 50)}...</p>}
+            {error && <p className="text-sm text-red-400">Error: {error.message.includes("User rejected") ? "Dibatalkan untuk mint sertifikat." : error.message.substring(0, 50) + "..."}</p>}
           </div>
         </div>
       </div>
@@ -260,12 +296,27 @@ export default function AdminPanel() {
             <Button
               variant="destructive"
               onClick={() => revoke(revokeId)}
-              disabled={revoking || !revokeId}
+              disabled={revoking || revokeConfirming || !revokeId}
               className="group w-full rounded-full h-12 bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/30"
             >
-              <span>{revoking ? "Processing..." : "Revoke"}</span>
+              <span>{revoking ? "Awaiting Signature..." : revokeConfirming ? "Processing..." : "Revoke"}</span>
               <Trash weight="bold" size={16} className="ml-2 group-hover:translate-x-1 transition-transform" />
             </Button>
+
+            {revokeSuccess && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-emerald-400 text-sm flex items-center gap-1 mt-2">
+                <CheckCircle weight="fill" /> Certificate successfully revoked!
+              </motion.div>
+            )}
+            {revokeError && (
+              <p className="text-sm text-red-400 mt-2">
+                Error: {revokeError.message.includes("User rejected")
+                  ? "Dibatalkan untuk revoke sertifikat."
+                  : revokeError.message.includes("reverted")
+                    ? "Sertifikat tidak ditemukan."
+                    : revokeError.message.substring(0, 80) + "..."}
+              </p>
+            )}
           </div>
         </div>
       </div>

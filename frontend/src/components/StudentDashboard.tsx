@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useAccount } from "wagmi";
 import { motion } from "framer-motion";
-import { Certificate, WarningCircle, SealCheck, Link as LinkIcon, MagnifyingGlass } from "@phosphor-icons/react";
+import { Certificate, WarningCircle, SealCheck, Link as LinkIcon, MagnifyingGlass, Copy, CheckCircle } from "@phosphor-icons/react";
 import { useCertificatesByOwner, useVerifyCertificate } from "../hooks/useCertificate";
 
 import {
@@ -23,6 +23,15 @@ import {
 function CertCard({ tokenId, index, searchTerm }: { tokenId: bigint; index: number; searchTerm: string }) {
   const { data } = useVerifyCertificate(tokenId);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopy = () => {
+    if (data && data[0]) {
+      navigator.clipboard.writeText(data[0]);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
 
   useEffect(() => {
     if (data?.[7]) {
@@ -63,9 +72,22 @@ function CertCard({ tokenId, index, searchTerm }: { tokenId: bigint; index: numb
       <div className="double-bezel-inner py-2 px-6 flex flex-col md:flex-row md:items-center justify-between gap-2">
         <div className="flex items-center gap-6">
           <div>
-            <p className="text-white/40 text-sm tracking-widest uppercase mb-1">
-              Certificate ID: {certIdStr}
-            </p>
+            <div
+              onClick={handleCopy}
+              className="flex items-center gap-2 cursor-pointer group w-fit"
+              title="Click to copy ID"
+            >
+              <p className="text-white/40 text-sm tracking-widest uppercase mb-1 group-hover:text-white/70 transition-colors">
+                {certIdStr}
+              </p>
+              <div className="mb-1">
+                {isCopied ? (
+                  <CheckCircle size={14} weight="fill" className="text-emerald-400" />
+                ) : (
+                  <Copy size={14} className="text-white/20 group-hover:text-white/50 transition-colors" />
+                )}
+              </div>
+            </div>
             <h3 className="text-2xl font-medium tracking-tight leading-tight">{data[2]}</h3>
             <p className="text-white/50 text-sm mt-1">{data[3]}</p>
           </div>
@@ -128,8 +150,9 @@ export default function StudentDashboard() {
 
   const currentItems = useMemo(() => {
     if (!tokenIds) return [];
+    const reversedTokens = [...tokenIds].reverse();
     const start = (currentPage - 1) * limitNum;
-    return tokenIds.slice(start, start + limitNum);
+    return reversedTokens.slice(start, start + limitNum);
   }, [tokenIds, currentPage, limitNum]);
 
   if (!isConnected) {
