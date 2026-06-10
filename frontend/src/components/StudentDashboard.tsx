@@ -71,7 +71,7 @@ function CertCard({ tokenId, index, searchTerm }: { tokenId: bigint; index: numb
           </div>
         </div>
 
-        <div className="flex items-start md:items-end justify-center gap-2">
+        <div className="flex items-start md:items-end justify-center">
           <div className="flex flex-row gap-2 mt-2">
             <a
               href={data[6].replace("ipfs://", "https://green-absent-gorilla-466.mypinata.cloud/ipfs/")}
@@ -80,8 +80,7 @@ function CertCard({ tokenId, index, searchTerm }: { tokenId: bigint; index: numb
               title="View IPFS Metadata"
               className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-sm font-medium"
             >
-              <LinkIcon size={16} className="text-white/70" />
-              <span className="text-white/80">Metadata</span>
+              <span className="underline text-white/80 text-xs">Metadata</span>
             </a>
             {imageUrl && (
               <a
@@ -91,8 +90,7 @@ function CertCard({ tokenId, index, searchTerm }: { tokenId: bigint; index: numb
                 title="View Certificate Image"
                 className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors text-sm font-medium"
               >
-                <LinkIcon size={16} className="text-white/70" />
-                <span>Image</span>
+                <span className="underline text-white/80 text-xs">Image</span>
               </a>
             )}
             <div className={`px-4 py-1.5 rounded-full text-xs tracking-wider uppercase font-medium flex items-center gap-1 w-fit ${isValid ? "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20" : "bg-red-500/10 text-red-400 ring-1 ring-red-500/20"}`}>
@@ -111,7 +109,7 @@ export default function StudentDashboard() {
   const { data: tokenIds, isLoading } = useCertificatesByOwner(address);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [limit, setLimit] = useState("10");
+  const [limit, setLimit] = useState("5");
   const [currentPage, setCurrentPage] = useState(1);
 
   // Debounce search term to prevent jitter/lag while typing
@@ -153,15 +151,15 @@ export default function StudentDashboard() {
           <h1 className="text-4xl md:text-5xl font-semibold tracking-tight">My Collection</h1>
         </div>
         <div className="flex flex-col gap-4 items-start sm:items-end">
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex sm:flex-wrap items-center gap-3">
             <div className="relative">
               <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" />
               <input
                 type="text"
-                placeholder="Search by ID or Name..."
+                placeholder="Search by ID or Course..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 rounded-full bg-white/[0.03] ring-1 ring-white/10 outline-none focus:ring-white/30 transition-all text-sm w-full md:w-64"
+                className="pl-10 pr-4 py-2 rounded-full bg-white/[0.03] ring-1 ring-white/10 outline-none focus:ring-white/30 transition-all text-sm w-auto"
               />
             </div>
 
@@ -172,10 +170,10 @@ export default function StudentDashboard() {
                 setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="w-[110px] bg-white/[0.03] ring-1 ring-white/10 border-none outline-none rounded-full h-9">
+              <SelectTrigger className="w-[70px] bg-white/[0.03] ring-1 ring-white/10 border-none outline-none rounded-full h-9">
                 <SelectValue placeholder="Limit" />
               </SelectTrigger>
-              <SelectContent className="bg-black border-white/10 text-white rounded-xl">
+              <SelectContent className="bg-black border-white/10 text-white rounded-xl mt-2">
                 <SelectItem value="5" className="focus:bg-white/10">5</SelectItem>
                 <SelectItem value="10" className="focus:bg-white/10">10</SelectItem>
                 <SelectItem value="20" className="focus:bg-white/10">20</SelectItem>
@@ -220,7 +218,7 @@ export default function StudentDashboard() {
                       <PaginationLink
                         onClick={() => setCurrentPage(page)}
                         isActive={currentPage === page}
-                        className={`cursor-pointer ${currentPage === page ? "bg-white text-black hover:bg-white/90" : "hover:bg-white/5 text-white"}`}
+                        className={`cursor-pointer ${currentPage === page ? "bg-white text-white hover:bg-white/90" : "hover:bg-white/5 text-white"}`}
                       >
                         {page}
                       </PaginationLink>

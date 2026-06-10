@@ -152,7 +152,7 @@ export default function AdminPanel() {
                 <SelectTrigger className="bg-transparent border-white/10 text-white">
                   <SelectValue placeholder="Pilih Kategori" />
                 </SelectTrigger>
-                <SelectContent className="bg-black border-white/10 text-white w-full">
+                <SelectContent className="bg-black border-white/10 text-white w-full mt-1 ml-10 sm:mt-0 sm:ml-0">
                   {CATEGORIES.map(c => (
                     <SelectItem key={c.value} value={c.value} className="focus:bg-white/10 focus:text-white">
                       {c.label} ({c.value})
@@ -183,7 +183,7 @@ export default function AdminPanel() {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-white/60">Course / Title</Label>
+              <Label className="text-white/60">Course</Label>
               <Input
                 className="bg-transparent border-white/10 focus:border-white/40 text-white"
                 placeholder="e.g. Web Development 3.0"
@@ -242,9 +242,6 @@ export default function AdminPanel() {
       {/* Revoke Section */}
       <div className="flex flex-col space-y-6">
         <div>
-          <span className="inline-block px-3 py-1 mb-4 text-[10px] uppercase tracking-[0.2em] font-medium bg-red-500/10 text-red-400 rounded-full">
-            Danger Zone
-          </span>
           <h2 className="text-3xl md:text-4xl font-semibold tracking-tight">Revoke Token</h2>
         </div>
 
