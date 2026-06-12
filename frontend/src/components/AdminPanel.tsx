@@ -270,7 +270,7 @@ export default function AdminPanel() {
                 <CheckCircle weight="fill" /> Minted successfully!
               </motion.div>
             )}
-            {error && <p className="text-sm text-red-400">Error: {error.message.includes("User rejected") ? "Dibatalkan untuk mint sertifikat." : error.message.substring(0, 50) + "..."}</p>}
+            {error && <p className="text-sm text-red-400">{error.message.includes("User rejected") ? "Error: Dibatalkan untuk mint sertifikat." : (error.message.includes("NotAuthorizedIssuer") || error.message.includes("reverted")) ? "Error: Wallet ini tidak punya akses untuk membuat sertifikat." : "Error: " + error.message.substring(0, 50) + "..."}</p>}
           </div>
         </div>
       </div>
